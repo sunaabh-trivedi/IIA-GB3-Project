@@ -51,9 +51,7 @@ typedef struct record {
     } variant;
 } Rec_Type, *Rec_Pointer;
 
-// #define NUMBER_OF_RUNS 500 /* Default number of runs */
-#define NUMBER_OF_RUNS 50000 /* Default number of runs */
-
+#define NUMBER_OF_RUNS 500 /* Default number of runs */
 
 /* Global Variables: */
 Rec_Pointer Ptr_Glob, Next_Ptr_Glob;
@@ -78,16 +76,6 @@ Boolean Func_3(Enumeration Enum_Par_Val);
 
 /* Main Program */
 int main(int argc, char **argv) {
-    // LED starting sequence
-    volatile unsigned int *gDebugLedsMemoryMappedRegister = (unsigned int *)0x2000;  // on FPGA
-    // volatile unsigned int *gDebugLedsMemoryMappedRegister = (unsigned int *)0x8000000;      // only for sunflower
-
-    *gDebugLedsMemoryMappedRegister = 0xFF;  // ON
-    for(int i = 0; i < 20000; i++);
-    *gDebugLedsMemoryMappedRegister = 0x00;  // OFF
-
-    // Dhrystone program start
-
     One_Fifty Int_1_Loc;
     One_Fifty Int_2_Loc;
     One_Fifty Int_3_Loc;
@@ -139,12 +127,6 @@ int main(int argc, char **argv) {
         Int_2_Loc = 7 * (Int_2_Loc - Int_3_Loc) - Int_1_Loc;
         Proc_2(&Int_1_Loc);
     }
-
-    // LED ending sequence
-
-    *gDebugLedsMemoryMappedRegister = 0xFF;  // ON
-    for(int i = 0; i < 20000; i++);
-    *gDebugLedsMemoryMappedRegister = 0x00;  // OFF
 
     return 0;
 }
