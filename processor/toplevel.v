@@ -86,10 +86,18 @@ module top (led);
 		.data_mem_sign_mask(data_sign_mask)
 	);
 
-	instruction_memory inst_mem( 
-		.addr(inst_in), 
-		.out(inst_out)
+	SB_SPRAM256KA inst_SPRAM0(
+		.ADDRESS(addr),
+		.DATAIN(data_in),
+		.MASKWREN(mask_wren),
+		.WREN(wren),
+		.CHIPSELECT(1'b1),
+		.CLOCK(clk),
+		.STANDBY(1'b0),
+		.POWEROFF(1'b1),
+		.DATAOUT(data_out)
 	);
+
 
 	data_mem data_mem_inst(
 			.clk(clk),
