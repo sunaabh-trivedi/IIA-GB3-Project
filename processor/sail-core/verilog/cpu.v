@@ -51,7 +51,8 @@ module cpu(
 			data_mem_WrData,
 			data_mem_memwrite,
 			data_mem_memread,
-			data_mem_sign_mask
+			data_mem_sign_mask,
+
 		);
 	/*
 	 *	Input Clock
@@ -63,6 +64,7 @@ module cpu(
 	 */
 	output [13:0]		inst_mem_in; //address
 	input [31:0]		inst_mem_out; //contents of address (instruction)
+
 
 	/*
 	 *	Data Memory
