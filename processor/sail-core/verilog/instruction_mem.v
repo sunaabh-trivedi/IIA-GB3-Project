@@ -18,7 +18,7 @@ module instruction_memory (
 
     SB_SPRAM256KA inst_SPRAM0 (
         .ADDRESS(addr),
-        .DATAIN(data_in[15:0]),
+        .DATAIN(),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
         .CHIPSELECT(1'b1),
