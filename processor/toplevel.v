@@ -64,8 +64,8 @@ module top (led);
 	/*
 	 *	Memory interface
 	 */
-	wire[31:0]	inst_in;
-	wire[31:0]	inst_out;
+	wire[13:0]	inst_in; //instruction address
+	wire[31:0]	inst_out; //instruction contents
 	wire[31:0]	data_out;
 	wire[31:0]	data_addr;
 	wire[31:0]	data_WrData;
@@ -86,17 +86,14 @@ module top (led);
 		.data_mem_sign_mask(data_sign_mask)
 	);
 
-	SB_SPRAM256KA inst_SPRAM0(
-		.ADDRESS(addr),
-		.DATAIN(data_in),
-		.MASKWREN(mask_wren),
-		.WREN(wren),
-		.CHIPSELECT(1'b1),
-		.CLOCK(clk),
-		.STANDBY(1'b0),
-		.POWEROFF(1'b1),
-		.DATAOUT(data_out)
+	instruction_memory inst_mem (
+		.addr(inst_in), //[13:0]
+		.wr_en(1b'0), // read mode, to read instructions
+		.data_in(), // [31:0] unused currently, as not writing to SPRAM
+		.data_out(inst_out), // [31:0]
+		.clk(clk)
 	);
+		
 
 
 	data_mem data_mem_inst(

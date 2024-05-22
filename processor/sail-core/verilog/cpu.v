@@ -61,8 +61,8 @@ module cpu(
 	/*
 	 *	instruction memory input
 	 */
-	output [31:0]		inst_mem_in;
-	input [31:0]		inst_mem_out;
+	output [13:0]		inst_mem_in; //address
+	input [31:0]		inst_mem_out; //contents of address (instruction)
 
 	/*
 	 *	Data Memory
@@ -183,7 +183,7 @@ module cpu(
 		);
 
 	adder pc_adder(
-			.input1(32'b100),
+			.input1(32'b1), //eg increment PC by 1 (each memory location in SPRAM is 32 wide, after width )
 			.input2(pc_out),
 			.out(pc_adder_out)
 		);
@@ -507,7 +507,7 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	assign inst_mem_in = pc_out;
+	assign inst_mem_in = pc_out[13:0];
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
