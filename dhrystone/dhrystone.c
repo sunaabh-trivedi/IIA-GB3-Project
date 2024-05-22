@@ -51,7 +51,8 @@ typedef struct record {
     } variant;
 } Rec_Type, *Rec_Pointer;
 
-#define NUMBER_OF_RUNS 500 /* Default number of runs */
+// #define NUMBER_OF_RUNS 500 /* Default number of runs */
+#define NUMBER_OF_RUNS 50000
 
 /* Global Variables: */
 Rec_Pointer Ptr_Glob, Next_Ptr_Glob;
