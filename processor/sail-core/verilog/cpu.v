@@ -182,7 +182,7 @@ module cpu(
 			.out(pc_in)
 		);
 
-	DSPAdd pc_adder(
+	DSPAdder pc_adder(
 			.A(32'b100),
 			.B(pc_out),
 			.out(pc_adder_out)
@@ -331,7 +331,7 @@ module cpu(
 			.out(addr_adder_mux_out)
 		);
 
-	DSPAdd addr_adder(
+	DSPAdder addr_adder(
 			.A(addr_adder_mux_out),
 			.B(id_ex_out[139:108]),
 			.out(addr_adder_sum)

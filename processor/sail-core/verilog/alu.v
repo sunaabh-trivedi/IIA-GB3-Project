@@ -75,15 +75,14 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 	wire [31:0] dsp_add_out;
 	wire [31:0] dsp_sub_out;
 
-	DSPAdd add(
+	DSPAdder add(
 		.A(A), //as on datasheet
 		.B(B),
 		.out(dsp_add_out),
 
 	);
 
-	DSPSub sub(
-		.clk(clk),
+	DSPSubtractor sub(
 		.A(A),
 		.B(B),
 		.out(dsp_sub_out),
