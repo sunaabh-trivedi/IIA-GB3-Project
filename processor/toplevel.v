@@ -50,7 +50,7 @@ module top (led);
 	wire		clk;
 	reg		ENCLKHF		= 1'b1;	// Plock enable
 	reg		CLKHF_POWERUP	= 1'b1;	// Power up the HFOSC circuit
-
+	
 
 	/*
 	 *	Use the iCE40's hard primitive for the clock source.
@@ -72,7 +72,7 @@ module top (led);
 	wire		data_memwrite;
 	wire		data_memread;
 	wire[3:0]	data_sign_mask;
-
+	wire 		wr_en;
 
 	cpu processor(
 		.clk(clk_proc),
@@ -88,7 +88,7 @@ module top (led);
 
 	instruction_memory inst_mem (
 		.addr(inst_in), //[13:0]
-		.wr_en(1b'0), // read mode, to read instructions
+		.wr_en(wr_en), // read mode, to read instructions
 		.data_in(), // [31:0] unused currently, as not writing to SPRAM
 		.data_out(inst_out), // [31:0]
 		.clk(clk)
