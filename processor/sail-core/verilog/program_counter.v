@@ -58,10 +58,11 @@ module program_counter(inAddr, outAddr, clk);
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design.
 	 */
+/*
 	initial begin
 		outAddr = 32'b0;
 	end
-
+*/
 	always @(posedge clk) begin
 		outAddr <= inAddr;
 	end

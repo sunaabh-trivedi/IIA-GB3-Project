@@ -57,10 +57,11 @@ module if_id (clk, data_in, data_out);
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design.
 	 */
+/*
 	initial begin
 		data_out = 64'b0;
 	end
-
+*/
 	always @(posedge clk) begin
 		data_out <= data_in;
 	end

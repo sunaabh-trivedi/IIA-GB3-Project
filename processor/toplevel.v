@@ -90,7 +90,7 @@ module top (led);
 	instruction_memory inst_mem (
 		.addr(inst_in), //[13:0]
 		.wr_en(1'b0), // read mode, to read instructions
-		.data_in(), // [31:0] unused currently, as not writing to SPRAM
+		.data_in(), // [31:0] unused currently, as not writing to SPRAM during operation
 		.data_out(inst_out), // [31:0]
 		.clk(clk)
 	);

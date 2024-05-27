@@ -88,10 +88,11 @@ module regfile(clk, write, wrAddr, wrData, rdAddrA, rdDataA, rdAddrB, rdDataB);
 	/*
 	 *	Sets register 0 to 0
 	 */
+	 /*
 	initial begin
 		regfile[0] = 32'b0;
 	end
-
+	*/
 	always @(posedge clk) begin
 		if (write==1'b1 && wrAddr!=5'b0) begin
 			regfile[wrAddr] <= wrData;
