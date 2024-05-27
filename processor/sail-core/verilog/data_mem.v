@@ -222,25 +222,19 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design.
 	 */
-	 /*
+
 	initial begin
 		$readmemh("verilog/data.hex", data_block);
 		clk_stall = 0;
 	end
-	*/
+
 	/*
 	 *	LED register interfacing with I/O
 	 */
 	always @(posedge clk) begin
-		if (ready)
 			if(memwrite == 1'b1 && addr == 32'h2000) begin
 				led_reg <= write_data;
 			end
-		else begin
-			$readmemh("verilog/data.hex", data_block);
-			
-			ready = 1;
-		end
 	end
 
 	/*
