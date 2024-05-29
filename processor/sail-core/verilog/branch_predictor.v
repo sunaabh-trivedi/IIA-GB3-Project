@@ -84,6 +84,7 @@ module branch_predictor(
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design and to thereby set the values.
 	 */
+	
 	initial begin
 		s = 2'b00;
 		branch_mem_sig_reg = 1'b0;

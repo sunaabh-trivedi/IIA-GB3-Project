@@ -88,6 +88,7 @@ module regfile(clk, write, wrAddr, wrData, rdAddrA, rdDataA, rdAddrB, rdDataB);
 	/*
 	 *	Sets register 0 to 0
 	 */
+
 	initial begin
 		regfile[0] = 32'b0;
 	end
