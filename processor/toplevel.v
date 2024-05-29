@@ -72,11 +72,15 @@ module top (led);
 	wire		data_memwrite;
 	wire		data_memread;
 	wire[3:0]	data_sign_mask;
-
+	
+	wire 		wr_en;
+	wire[31:0] 	inst_data;
+	wire[13:0]  csr_instaddr;
+ 	wire[13:0]  cpu_instaddr;
 
 	cpu processor(
 		.clk(clk_proc),
-		.inst_mem_in(inst_in),
+		.inst_mem_in(cpu_instaddr),
 		.inst_mem_out(inst_out),
 		.data_mem_out(data_out),
 		.data_mem_addr(data_addr),
@@ -84,16 +88,24 @@ module top (led);
 		.data_mem_memwrite(data_memwrite),
 		.data_mem_memread(data_memread),
 		.data_mem_sign_mask(data_sign_mask),
-
 	);
 
 	instruction_memory inst_mem (
 		.addr(inst_in), //[13:0]
-		.wr_en(1'b0), // read mode, to read instructions
-		.data_in(), // [31:0] unused currently, as not writing to SPRAM during operation
+		.wr_en(wr_en), // read mode, to read instructions
+		.data_in(inst_data), // [31:0] unused currently, as not writing to SPRAM during operation
 		.data_out(inst_out), // [31:0]
 		.clk(clk)
+		
 	);
+
+	csr_file csr_file ( //to connect csr_file to Instruction Memory
+		.wr_en(wr_en),
+		.rdVal_CSR(inst_data),
+		.counter(csr_instaddr)
+	);
+
+
 		
 
 
@@ -109,5 +121,11 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
+
+
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
+
+	    // MUX to select between CSR module and CPU for driving inst_in
+    assign inst_in = (wr_en) ? csr_instaddr : cpu_instaddr;
+
 endmodule

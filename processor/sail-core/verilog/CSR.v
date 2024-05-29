@@ -44,21 +44,67 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR);
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, counter);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
 	input [31:0] wrVal_CSR;
 	input [11:0] rdAddr_CSR;
 	output reg[31:0] rdVal_CSR;
-
+	output reg wr_en; //for instruction memory (also use to stall program counter)
 	reg [31:0] csr_file [0:2**10-1];
+	output reg [13:0]	counter; //for indexing csr_file to write to instruction memory
+	
 
-	always @(posedge clk) begin
-		if (write) begin
-			csr_file[wrAddr_CSR] <= wrVal_CSR;
-		end
-		rdVal_CSR <= csr_file[rdAddr_CSR];
+
+	localparam STATE_INIT = 1'b0;
+	localparam STATE_OPERATION = 1'b1;
+	reg state;
+	reg next_state;
+
+	initial begin
+		/*
+		 *	read from "program.hex" and store the instructions in csr file
+		 */
+		$readmemh("verilog/program.hex",csr_file);
+		state = STATE_INIT;
 	end
+
+    always @(posedge clk) begin
+            state <= next_state;
+    end
+
+    always @(*) begin
+        case (state)
+            STATE_INIT: begin
+                next_state = (counter < 2048) ? STATE_INIT : STATE_OPERATION;
+            end
+            STATE_OPERATION: begin
+                next_state = STATE_OPERATION;
+            end
+        endcase
+    end
+
+    always @(posedge clk) begin
+        if (state == STATE_INIT) begin
+			wr_en <= 1'b1;
+            // Write the counter-th value in csr_file to rdVal_CSR
+            rdVal_CSR <= csr_file[counter[9:0]];
+            // Increment the counter
+            if (counter < 2**10 - 1) begin
+                counter <= counter + 1;
+			end else if (counter < 2048) begin 
+				csr_file[counter-1024] <= 32'b0;
+				counter <= counter + 1; //this may mean that this starts storing stuff in spram locations (1024-2047), but it should just be storing 0's
+            end else begin
+				wr_en <= 1'b0;
+            end
+        end else if (state == STATE_OPERATION) begin
+            if (write) begin
+                csr_file[wrAddr_CSR] <= wrVal_CSR;
+            end
+            rdVal_CSR <= csr_file[rdAddr_CSR];
+        end
+    end
 
 endmodule

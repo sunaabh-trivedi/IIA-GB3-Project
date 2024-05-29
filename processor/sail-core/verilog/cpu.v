@@ -52,6 +52,7 @@ module cpu(
 			data_mem_memwrite,
 			data_mem_memread,
 			data_mem_sign_mask,
+			start_pc
 
 		);
 	/*
@@ -66,6 +67,7 @@ module cpu(
 	input [31:0]		inst_mem_out; //contents of address (instruction)
 
 
+
 	/*
 	 *	Data Memory
 	 */
@@ -76,6 +78,7 @@ module cpu(
 	output			data_mem_memread;
 	output [3:0]		data_mem_sign_mask;
 
+
 	/*
 	 *	Program Counter
 	 */
@@ -85,6 +88,7 @@ module cpu(
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
+	input start_pc;
 
 	/*
 	 *	Pipeline Registers
@@ -187,7 +191,8 @@ module cpu(
 	adder pc_adder(
 			.input1(32'b1), //eg increment PC by 1 (each memory location in SPRAM is 32 wide, after width )
 			.input2(pc_out),
-			.out(pc_adder_out)
+			.out(pc_adder_out),
+			.enable(start_pc)
 		);
 
 	program_counter PC(
@@ -336,7 +341,8 @@ module cpu(
 	adder addr_adder(
 			.input1(addr_adder_mux_out),
 			.input2(id_ex_out[139:108]),
-			.out(addr_adder_sum)
+			.out(addr_adder_sum),
+			.enable(1'b0)
 		);
 
 	mux2to1 alu_mux(

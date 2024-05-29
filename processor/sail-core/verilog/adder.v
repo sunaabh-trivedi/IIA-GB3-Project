@@ -45,10 +45,19 @@
 
 
 
-module adder(input1, input2, out);
-	input [31:0]	input1;
-	input [31:0]	input2;
-	output [31:0]	out;
+module adder(
+    input [31:0] input1,
+    input [31:0] input2,
+    output reg [31:0] out,
+    input enable
+);
 
-	assign		out = input1 + input2;
+    always @* begin
+        if (enable) begin
+            out = input1 + input2;
+        end else begin
+            out = input2;
+        end
+    end
+
 endmodule
