@@ -33,6 +33,7 @@ module instruction_memory (
         .CHIPSELECT(1'b1),
         .CLOCK(clk),
         .STANDBY(1'b0),
+        .SLEEP(1'b0),
         .POWEROFF(1'b1),
         .DATAOUT(inst_out_0)
     );
@@ -45,6 +46,7 @@ module instruction_memory (
         .CHIPSELECT(1'b1),
         .CLOCK(clk),
         .STANDBY(1'b0),
+        .SLEEP(1'b0),
         .POWEROFF(1'b1),
         .DATAOUT(inst_out_1)
     );

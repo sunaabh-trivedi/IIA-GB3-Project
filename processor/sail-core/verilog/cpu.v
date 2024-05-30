@@ -53,7 +53,8 @@ module cpu(
 			data_mem_memread,
 			data_mem_sign_mask,
 			inst_data,
-			wr_en
+			wr_en,
+			
 		);
 	/*
 	 *	Input Clock
@@ -90,7 +91,7 @@ module cpu(
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
-
+	wire 			start_pc; //0 means start (legacy from when using wr_en)
 	/*
 	 *	Pipeline Registers
 	 */
@@ -195,7 +196,7 @@ module cpu(
 			.input1(32'b1), //eg increment PC by 1 (each memory location in SPRAM is 32 wide, after width )
 			.input2(pc_out),
 			.out(pc_adder_out),
-			.enable(wr_en)
+			.enable(start_pc)
 		);
 
 	
@@ -222,14 +223,14 @@ module cpu(
 	mux2to1 inst_mem_addr_mux(
 			.input0({18'b0 ,inst_mem_inCPU}),
 			.input1({18'b0, csr_instaddr}),
-			.select(wr_en),
+			.select(start_pc),
 			.out(inst_mem_in32b)
 		);
 
 	mux2to1 inst_data_write_mux(
 			.input0(32'b0),
 			.input1(rdValOut_CSR),
-			.select(wr_en),
+			.select(start_pc),
 			.out(inst_data)
 
 	);
@@ -305,8 +306,8 @@ module cpu(
 			.rdAddr_CSR(inst_mux_out[31:20]),
 			.rdVal_CSR(rdValOut_CSR),
 			.wr_en(wr_en),
-			.counter(csr_instaddr)
-
+			.spram_wr_addr(csr_instaddr),
+			.start_pc(start_pc)
 		);
 
 
@@ -327,7 +328,7 @@ module cpu(
 	mux2to1 RegB_mux_inputselect(
 			.input0(rdValOut_CSR),
 			.input1(32'b0),
-			.select(wr_en),
+			.select(start_pc),
 			.out(rdValOut_CSR_enabled)
 		);
 
