@@ -97,7 +97,7 @@ module top (led);
 		.wr_en(wr_en), // read mode, to read instructions
 		.data_in(inst_data), // [31:0]
 		.data_out(inst_out), // [31:0]
-		.clk(clk)
+		.clk(clk_proc)
 	);
 
 		
