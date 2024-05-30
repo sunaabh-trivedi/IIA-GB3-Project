@@ -53,10 +53,10 @@ module adder(
 );
 
     always @* begin
-        if (enable) begin
+        if (!enable) begin
             out = input1 + input2;
         end else begin
-            out = input2;
+            out = 32'b0;
         end
     end
 

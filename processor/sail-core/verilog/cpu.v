@@ -52,8 +52,8 @@ module cpu(
 			data_mem_memwrite,
 			data_mem_memread,
 			data_mem_sign_mask,
-			start_pc
-
+			inst_data,
+			wr_en
 		);
 	/*
 	 *	Input Clock
@@ -65,8 +65,10 @@ module cpu(
 	 */
 	output [13:0]		inst_mem_in; //address
 	input [31:0]		inst_mem_out; //contents of address (instruction)
-
-
+	output [31:0]		inst_data; //for writing to inst_mem from csr
+	output wire 			wr_en;
+	wire [13:0]	 		inst_mem_inCPU;
+	wire [31:0]			inst_mem_in32b; //output of mux is 32 bits
 
 	/*
 	 *	Data Memory
@@ -88,7 +90,6 @@ module cpu(
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
-	input start_pc;
 
 	/*
 	 *	Pipeline Registers
@@ -127,7 +128,9 @@ module cpu(
 	wire [31:0]		RegA_AddrFwdFlush_mux_out;
 	wire [31:0]		RegB_AddrFwdFlush_mux_out;
 	wire [31:0]		rdValOut_CSR;
+	wire [31:0]		rdValOut_CSR_enabled; //output of MUX
 	wire [3:0]		dataMem_sign_mask;
+	
 
 	/*
 	 *	Execute stage
@@ -177,7 +180,7 @@ module cpu(
 	wire			mistake_trigger;
 	wire			decode_ctrl_mux_sel;
 	wire			inst_mux_sel;
-
+	wire [13:0]		csr_instaddr;
 	/*
 	 *	Instruction Fetch Stage
 	 */
@@ -192,9 +195,10 @@ module cpu(
 			.input1(32'b1), //eg increment PC by 1 (each memory location in SPRAM is 32 wide, after width )
 			.input2(pc_out),
 			.out(pc_adder_out),
-			.enable(start_pc)
+			.enable(wr_en)
 		);
 
+	
 	program_counter PC(
 			.inAddr(pc_in),
 			.outAddr(pc_out),
@@ -214,6 +218,22 @@ module cpu(
 			.select(Fence_signal),
 			.out(fence_mux_out)
 		);
+
+	mux2to1 inst_mem_addr_mux(
+			.input0({18'b0 ,inst_mem_inCPU}),
+			.input1({18'b0, csr_instaddr}),
+			.select(wr_en),
+			.out(inst_mem_in32b)
+		);
+
+	mux2to1 inst_data_write_mux(
+			.input0(32'b0),
+			.input1(rdValOut_CSR),
+			.select(wr_en),
+			.out(inst_data)
+
+	);
+	
 
 	/*
 	 *	IF/ID Pipeline Register
@@ -283,8 +303,12 @@ module cpu(
 			.wrAddr_CSR(mem_wb_out[116:105]),
 			.wrVal_CSR(mem_wb_out[35:4]),
 			.rdAddr_CSR(inst_mux_out[31:20]),
-			.rdVal_CSR(rdValOut_CSR)
+			.rdVal_CSR(rdValOut_CSR),
+			.wr_en(wr_en),
+			.counter(csr_instaddr)
+
 		);
+
 
 	mux2to1 RegA_mux(
 			.input0(regA_out),
@@ -295,9 +319,16 @@ module cpu(
 
 	mux2to1 RegB_mux(
 			.input0(regB_out),
-			.input1(rdValOut_CSR),
+			.input1(rdValOut_CSR_enabled),
 			.select(CSRR_signal),
 			.out(RegB_mux_out)
+		);
+
+	mux2to1 RegB_mux_inputselect(
+			.input0(rdValOut_CSR),
+			.input1(32'b0),
+			.select(wr_en),
+			.out(rdValOut_CSR_enabled)
 		);
 
 	mux2to1 RegA_AddrFwdFlush_mux( //TODO cleanup
@@ -515,7 +546,9 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	assign inst_mem_in = pc_out[13:0];
+
+	assign inst_mem_inCPU = pc_out[13:0];
+	assign inst_mem_in = inst_mem_in32b[13:0];
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
