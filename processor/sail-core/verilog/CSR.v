@@ -131,7 +131,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         end
     end
 
-/*
+/* d
     always @(posedge clk) begin
 		case (state) 
 			STATE_INIT: begin
