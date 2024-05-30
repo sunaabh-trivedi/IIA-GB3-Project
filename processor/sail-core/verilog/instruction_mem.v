@@ -15,7 +15,7 @@ module instruction_memory (
 );
 
     wire [15:0] inst_out_0, inst_out_1;
-
+/*
     reg [13:0] addr_reg;
     reg [31:0] data_in_reg;
 
@@ -24,10 +24,10 @@ module instruction_memory (
         addr_reg <= addr;
         data_in_reg <= data_in;
     end
-
+*/
     SB_SPRAM256KA inst_SPRAM0 (
-        .ADDRESS(addr_reg),
-        .DATAIN(data_in_reg[15:0]),
+        .ADDRESS(addr),
+        .DATAIN(data_in[15:0]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
         .CHIPSELECT(1'b1),
@@ -38,8 +38,8 @@ module instruction_memory (
     );
 
     SB_SPRAM256KA inst_SPRAM1 (
-        .ADDRESS(addr_reg),
-        .DATAIN(data_in_reg[31:16]),
+        .ADDRESS(addr),
+        .DATAIN(data_in[31:16]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
         .CHIPSELECT(1'b1),
