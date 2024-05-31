@@ -64,7 +64,7 @@ module top (led);
 	/*
 	 *	Memory interface
 	 */
-	wire[13:0]	inst_in; //instruction address
+	wire[31:0]	inst_in; //instruction address
 	wire[31:0]	inst_out; //instruction contents
 	wire[31:0]	data_out;
 	wire[31:0]	data_addr;
@@ -75,8 +75,7 @@ module top (led);
 	
 	wire 		wr_en;
 	wire[31:0] 	inst_data;
-	wire[13:0]  csr_instaddr;
- 	wire[13:0]  cpu_instaddr;
+
 
 	cpu processor(
 		.clk(clk_proc),
@@ -93,7 +92,7 @@ module top (led);
 	);
 
 	instruction_memory inst_mem (
-		.addr(inst_in), //[13:0]
+		.addr(inst_in[13:0]), //[13:0]
 		.wr_en(wr_en), // read mode, to read instructions
 		.data_in(inst_data), // [31:0]
 		.data_out(inst_out), // [31:0]

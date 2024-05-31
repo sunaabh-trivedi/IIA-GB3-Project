@@ -44,7 +44,7 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc);
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc, led);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
@@ -64,6 +64,10 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 	reg state;
 	reg next_state;
 
+	reg [7:0] LEDstatus;
+	reg	[31:0] counterLED;
+	output [7:0] led;
+
 	initial begin
 		/*
 		 *	read from "program.hex" and store the instructions in csr file
@@ -73,6 +77,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		counter1 = 0;
 		counter2 = 0;
 		start_pc = 1'b1; //means dont start pc yet
+		LEDstatus <= 8'b00000000;
 	end
 
     always @(posedge clk) begin
@@ -82,10 +87,10 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
     always @(*) begin
         case (state)
             STATE_INIT: begin
-                next_state = (counter1 < 11'b10000000000) ? STATE_INIT : STATE_CLEAR; //look into byte vs word addressing
+                next_state = (counter1 < 1024*4) ? STATE_INIT : STATE_CLEAR; //look into byte vs word addressing
             end //check if should be 1024 or 1023
 			STATE_CLEAR: begin
-				next_state = (counter2 < 11'b10000000000) ? STATE_CLEAR : STATE_OPERATION;
+				next_state = (counter2 < 1024) ? STATE_CLEAR : STATE_OPERATION;
 			end
             STATE_OPERATION: begin
                 next_state = STATE_OPERATION;
@@ -98,15 +103,11 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         if (state == STATE_INIT) begin
 			
             // Write the counter-th value in csr_file to rdVal_CSR
-            rdVal_CSR <= csr_file[counter1[9:0]];
-			spram_wr_addr <= (counter1 << 2);
+            rdVal_CSR <= csr_file[counter1[9:0]>>2];
+			spram_wr_addr <= counter1;
 			wr_en <= 1'b1; //write data to spram
-
-            // Increment the counter
-            if (counter1 < 11'b10000000000 ) begin //this may need to be 1023
-                counter1 <= counter1 + 1;
-			
-			end 
+            counter1 <= counter1 + 4;
+			LEDstatus <= 8'b00000000;
 
 		
 
@@ -114,8 +115,8 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 
 			csr_file[counter2[9:0]] <= 32'b0; 
             // Increment the counter
-            if (counter2 < 11'b10000000000 ) begin //this may need to be 1023
-                counter2 <= counter2 + 1;
+			 begin //this may need to be 1023
+            counter2 <= counter2 + 1;
 			end
 
 		
@@ -129,4 +130,5 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         end
     end
 
+	assign led = LEDstatus;
 endmodule

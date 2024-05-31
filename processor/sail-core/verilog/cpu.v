@@ -64,12 +64,11 @@ module cpu(
 	/*
 	 *	instruction memory input
 	 */
-	output [13:0]		inst_mem_in; //address
+	output [31:0]		inst_mem_in; //address
 	input [31:0]		inst_mem_out; //contents of address (instruction)
 	output [31:0]		inst_data; //for writing to inst_mem from csr
-	output wire 			wr_en;
-	wire [13:0]	 		inst_mem_inCPU;
-	wire [31:0]			inst_mem_in32b; //output of mux is 32 bits
+	output wire reg			wr_en;
+
 
 	/*
 	 *	Data Memory
@@ -225,10 +224,10 @@ module cpu(
 		);
 
 	mux2to1 inst_mem_addr_mux(
-			.input0({18'b0 ,inst_mem_inCPU}),
+			.input0(pc_out),
 			.input1({18'b0, csr_instaddr}),
 			.select(start_pc),
-			.out(inst_mem_in32b)
+			.out(inst_mem_in)
 		);
 
 	mux2to1 inst_data_write_mux(
@@ -551,8 +550,7 @@ module cpu(
 
 	//Instruction Memory Connections
 
-	assign inst_mem_inCPU = pc_out[13:0];
-	assign inst_mem_in = inst_mem_in32b[13:0];
+
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
