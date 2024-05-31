@@ -129,31 +129,4 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         end
     end
 
-/* 
-    always @(posedge clk) begin
-		case (state) 
-			STATE_INIT: begin
-				wr_en <= 1'b1;
-				// Write the counter-th value in csr_file to rdVal_CSR
-				rdVal_CSR <= csr_file[counter[11:0]];
-				// Increment the counter
-				if (counter < 2**10 - 1) begin
-					counter <= counter + 1;
-				end else if (counter < 2048) begin 
-					csr_file[counter-1024] <= 32'b0;
-					counter <= counter + 1; //this may mean that this starts storing stuff in spram locations (1024-2047), but it should just be storing 0's
-				end else begin
-					wr_en <= 1'b0;
-					state <= STATE_OPERATION;
-				end
-			end
-			STATE_OPERATION: begin
-				if (write) begin
-					csr_file[wrAddr_CSR] <= wrVal_CSR;
-				end
-				rdVal_CSR <= csr_file[rdAddr_CSR];
-			end
-		endcase
-    end
-*/
 endmodule
