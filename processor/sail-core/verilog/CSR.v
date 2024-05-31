@@ -44,7 +44,7 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc, led);
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
@@ -60,13 +60,11 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 
 	parameter STATE_INIT = 2'b00;
 	parameter STATE_CLEAR = 2'b01;
-	parameter STATE_OPERATION = 2'b10; //was 10
+	parameter STATE_OPERATION = 2'b10; 
 	reg state;
 	reg next_state;
 
-	reg [7:0] LEDstatus;
-	reg	[31:0] counterLED;
-	output [7:0] led;
+
 
 	initial begin
 		/*
@@ -77,7 +75,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		counter1 = 0;
 		counter2 = 0;
 		start_pc = 1'b0; //means dont start pc yet
-		LEDstatus <= 8'b00000000;
+
 	end
 
     always @(posedge clk) begin
@@ -107,7 +105,6 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 			spram_wr_addr <= counter1;
 			wr_en <= 1'b1; //write data to spram
             counter1 <= counter1 + 4;
-			LEDstatus <= 8'b00000000;
 
 		
 
@@ -130,5 +127,4 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         end
     end
 
-	assign led = LEDstatus;
 endmodule
