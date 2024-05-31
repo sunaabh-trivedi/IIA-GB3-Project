@@ -76,7 +76,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		state = STATE_INIT;
 		counter1 = 0;
 		counter2 = 0;
-		start_pc = 1'b1; //means dont start pc yet
+		start_pc = 1'b0; //means dont start pc yet
 		LEDstatus <= 8'b00000000;
 	end
 

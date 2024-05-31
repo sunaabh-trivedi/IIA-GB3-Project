@@ -44,10 +44,14 @@
 
 
 
-module program_counter(inAddr, outAddr, clk);
+module program_counter(inAddr, outAddr, clk, led);
 	input			clk;
 	input [31:0]		inAddr;
 	output reg[31:0]	outAddr;
+	
+	reg [31:0] 			LEDcount = 0;
+	reg [7:0] LEDstatus  = 8'b11111111;
+	output [7:0]	led;
 
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
@@ -65,5 +69,16 @@ module program_counter(inAddr, outAddr, clk);
 
 	always @(posedge clk) begin
 		outAddr <= inAddr;
+		if (LEDcount > 12000000) begin
+			LEDstatus <= ~LEDstatus;
+			LEDcount <= 0;
+		end else begin
+			LEDcount <= LEDcount + 1;
+		end
+
 	end
+	
+	assign led = LEDstatus;
+
+
 endmodule

@@ -90,7 +90,7 @@ module cpu(
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
-	wire 			start_pc; //0 means start (legacy from when using wr_en)
+	wire 			start_pc; //1 means start 
 	/*
 	 *	Pipeline Registers
 	 */
@@ -224,15 +224,15 @@ module cpu(
 		);
 
 	mux2to1 inst_mem_addr_mux(
-			.input0(pc_out),
-			.input1({18'b0, csr_instaddr}),
+			.input1(pc_out),
+			.input0({18'b0, csr_instaddr}),
 			.select(start_pc),
 			.out(inst_mem_in)
 		);
 
 	mux2to1 inst_data_write_mux(
-			.input0(32'b0),
-			.input1(rdValOut_CSR),
+			.input1(32'b0),
+			.input0(rdValOut_CSR),
 			.select(start_pc),
 			.out(inst_data)
 	);
@@ -328,8 +328,8 @@ module cpu(
 		);
 
 	mux2to1 RegB_mux_inputselect(
-			.input0(rdValOut_CSR),
-			.input1(32'b0),
+			.input1(rdValOut_CSR),
+			.input0(32'b0),
 			.select(start_pc),
 			.out(rdValOut_CSR_enabled)
 		);

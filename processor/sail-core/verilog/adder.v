@@ -53,7 +53,7 @@ module adder(
 );
 
     always @* begin
-        if (!enable) begin
+        if (enable) begin
             out = input1 + input2;
         end else begin
             out = 32'b0;
