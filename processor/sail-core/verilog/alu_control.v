@@ -64,12 +64,12 @@ module ALUControl(FuncCode, ALUCtl, Opcode);
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design and to thereby set the values.
 	 */
-/*
+
 	initial begin
 		ALUCtl = 7'b0;
 	end
 
-*/
+
 
 	/*
 	 *	TODO:

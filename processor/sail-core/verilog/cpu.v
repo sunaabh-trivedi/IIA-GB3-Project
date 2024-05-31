@@ -95,7 +95,8 @@ module cpu(
 	/*
 	 *	Pipeline Registers
 	 */
-	wire [63:0]		if_id_out;
+	//wire [63:0]		if_id_out;
+	wire [31:0]			if_id_out; //bypass IF_ID for instructions
 	wire [177:0]		id_ex_out;
 	wire [154:0]		ex_mem_out;
 	wire [116:0]		mem_wb_out;
@@ -206,10 +207,17 @@ module cpu(
 			.clk(clk)
 		);
 
+    reg inst_mux_sel_delayed;
+
+    // Always block to delay inst_mux_sel by one clock cycle
+    always @(posedge clk) begin
+        inst_mux_sel_delayed <= inst_mux_sel;
+    end
+
 	mux2to1 inst_mux(
 			.input0(inst_mem_out),
 			.input1(32'b0),
-			.select(inst_mux_sel),
+			.select(inst_mux_sel_delayed),
 			.out(inst_mux_out)
 		);
 
@@ -241,7 +249,8 @@ module cpu(
 	 */
 	if_id if_id_reg(
 			.clk(clk),
-			.data_in({inst_mux_out, pc_out}),
+			//.data_in({inst_mux_out, pc_out}),
+			.data_in(pc_out),
 			.data_out(if_id_out)
 		);
 
@@ -249,7 +258,8 @@ module cpu(
 	 *	Decode Stage
 	 */
 	control control_unit(
-			.opcode({if_id_out[38:32]}),
+			//.opcode({if_id_out[38:32]}),
+			.opcode({inst_mux_out[6:0]}),
 			.MemtoReg(MemtoReg1),
 			.RegWrite(RegWrite1),
 			.MemWrite(MemWrite1),
@@ -283,18 +293,22 @@ module cpu(
 		);
 
 	imm_gen immediate_generator(
-			.inst(if_id_out[63:32]),
+			//.inst(if_id_out[63:32]),
+			.inst(inst_mux_out),
 			.imm(imm_out)
 		);
 
 	ALUControl alu_control(
-			.Opcode(if_id_out[38:32]),
-			.FuncCode({if_id_out[62], if_id_out[46:44]}),
+			//.Opcode(if_id_out[38:32]),
+			.Opcode({inst_mux_out[6:0]}),
+			//.FuncCode({if_id_out[62], if_id_out[46:44]}),
+			.FuncCode({inst_mux_out[30], inst_mux_out[14:12]}),
 			.ALUCtl(alu_ctl)
 		);
 
 	sign_mask_gen sign_mask_gen_inst(
-			.func3(if_id_out[46:44]),
+			//.func3(if_id_out[46:44]),
+			.func3(inst_mux_out[14:12]),
 			.sign_mask(dataMem_sign_mask)
 		);
 
@@ -313,7 +327,8 @@ module cpu(
 
 	mux2to1 RegA_mux(
 			.input0(regA_out),
-			.input1({27'b0, if_id_out[51:47]}),
+			//.input1({27'b0, if_id_out[51:47]}),
+			.input1({27'b0, inst_mux_out[19:15]}),
 			.select(CSRRI_signal),
 			.out(RegA_mux_out)
 		);
@@ -333,25 +348,29 @@ module cpu(
 		);
 
 	mux2to1 RegA_AddrFwdFlush_mux( //TODO cleanup
-			.input0({27'b0, if_id_out[51:47]}),
+			//.input0({27'b0, if_id_out[51:47]}),
+			.input0({27'b0, inst_mux_out[19:15]}),
 			.input1(32'b0),
 			.select(CSRRI_signal),
 			.out(RegA_AddrFwdFlush_mux_out)
 		);
 
 	mux2to1 RegB_AddrFwdFlush_mux( //TODO cleanup
-			.input0({27'b0, if_id_out[56:52]}),
+			//.input0({27'b0, if_id_out[56:52]}),
+			.input0({27'b0, inst_mux_out[24:20]}),
 			.input1(32'b0),
 			.select(CSRR_signal),
 			.out(RegB_AddrFwdFlush_mux_out)
 		);
 
-	assign CSRRI_signal = CSRR_signal & (if_id_out[46]);
+	//assign CSRRI_signal = CSRR_signal & (if_id_out[46]);
+	assign CSRRI_signal = CSRR_signal & (inst_mux_out[14]);
 
 	//ID/EX Pipeline Register
 	id_ex id_ex_reg(
 			.clk(clk),
-			.data_in({if_id_out[63:52], RegB_AddrFwdFlush_mux_out[4:0], RegA_AddrFwdFlush_mux_out[4:0], if_id_out[43:39], dataMem_sign_mask, alu_ctl, imm_out, RegB_mux_out, RegA_mux_out, if_id_out[31:0], cont_mux_out[10:7], predict, cont_mux_out[6:0]}),
+			//.data_in({if_id_out[63:52], RegB_AddrFwdFlush_mux_out[4:0], RegA_AddrFwdFlush_mux_out[4:0], if_id_out[43:39], dataMem_sign_mask, alu_ctl, imm_out, RegB_mux_out, RegA_mux_out, if_id_out[31:0], cont_mux_out[10:7], predict, cont_mux_out[6:0]}),
+			.data_in({inst_mux_out[31:20], RegB_AddrFwdFlush_mux_out[4:0], RegA_AddrFwdFlush_mux_out[4:0], inst_mux_out[11:7], dataMem_sign_mask, alu_ctl, imm_out, RegB_mux_out, RegA_mux_out, if_id_out[31:0], cont_mux_out[10:7], predict, cont_mux_out[6:0]}),
 			.data_out(id_ex_out)
 		);
 
@@ -548,7 +567,7 @@ module cpu(
 
 	//Instruction Memory Connections
 
-	assign inst_mem_inCPU = pc_out[13:0] ;
+	assign inst_mem_inCPU = pc_out[13:0];
 	assign inst_mem_in = inst_mem_in32b[13:0];
 
 	//Data Memory Connections

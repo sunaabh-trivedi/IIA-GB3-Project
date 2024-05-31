@@ -93,7 +93,7 @@ module regfile(clk, write, wrAddr, wrData, rdAddrA, rdDataA, rdAddrB, rdDataB);
 		regfile[0] = 32'b0;
 	end
 
-	always @(posedge clk) begin
+	always @(posedge clk) begin //rdAddrA and rdAddrB are inputs from MUX
 		if (write==1'b1 && wrAddr!=5'b0) begin
 			regfile[wrAddr] <= wrData;
 		end

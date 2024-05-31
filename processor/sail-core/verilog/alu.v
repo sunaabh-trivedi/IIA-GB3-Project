@@ -70,12 +70,12 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design.
 	 */
-/*
+
 	initial begin
 		ALUOut = 32'b0;
 		Branch_Enable = 1'b0;
 	end
-*/
+
 	always @(ALUctl, A, B) begin
 		case (ALUctl[3:0])
 			/*

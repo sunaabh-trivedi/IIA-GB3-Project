@@ -59,8 +59,8 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 	reg [13:0] counter2;
 
 	parameter STATE_INIT = 2'b00;
-	//parameter STATE_CLEAR = 2'b01;
-	parameter STATE_OPERATION = 2'b01; //was 10
+	parameter STATE_CLEAR = 2'b01;
+	parameter STATE_OPERATION = 2'b10; //was 10
 	reg state;
 	reg next_state;
 
@@ -71,7 +71,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		$readmemh("verilog/program.hex",csr_file);
 		state = STATE_INIT;
 		counter1 = 0;
-		//counter2 = 0;
+		counter2 = 0;
 		start_pc = 1'b1; //means dont start pc yet
 	end
 
@@ -82,11 +82,11 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
     always @(*) begin
         case (state)
             STATE_INIT: begin
-                next_state = (counter1 < 11'b10000000000) ? STATE_INIT : STATE_OPERATION; //look into byte vs word addressing
+                next_state = (counter1 < 11'b10000000000) ? STATE_INIT : STATE_CLEAR; //look into byte vs word addressing
             end //check if should be 1024 or 1023
-		/*	STATE_CLEAR: begin
+			STATE_CLEAR: begin
 				next_state = (counter2 < 11'b10000000000) ? STATE_CLEAR : STATE_OPERATION;
-			end */
+			end
             STATE_OPERATION: begin
                 next_state = STATE_OPERATION;
             end
@@ -98,8 +98,8 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         if (state == STATE_INIT) begin
 			
             // Write the counter-th value in csr_file to rdVal_CSR
-            rdVal_CSR <= csr_file[counter1];
-			spram_wr_addr <= counter1 << 2;
+            rdVal_CSR <= csr_file[counter1[9:0]];
+			spram_wr_addr <= (counter1 << 2);
 			wr_en <= 1'b1; //write data to spram
 
             // Increment the counter
@@ -109,17 +109,17 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 			end 
 
 		
-/*
+
 		end else if (state == STATE_CLEAR)  begin
 
 			csr_file[counter2[9:0]] <= 32'b0; 
             // Increment the counter
-            if (counter2 < 2**10 ) begin //this may need to be 1023
+            if (counter2 < 11'b10000000000 ) begin //this may need to be 1023
                 counter2 <= counter2 + 1;
 			end
 
 		
-*/
+
     	end else if (state == STATE_OPERATION) begin
 			start_pc <= 1'b0;
             if (write) begin
