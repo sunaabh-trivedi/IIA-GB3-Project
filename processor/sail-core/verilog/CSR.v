@@ -59,8 +59,8 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 	reg [13:0] counter2;
 
 	parameter STATE_INIT = 2'b00;
-	parameter STATE_CLEAR = 2'b01;
-	parameter STATE_OPERATION = 2'b10;
+	//parameter STATE_CLEAR = 2'b01;
+	parameter STATE_OPERATION = 2'b01; //was 10
 	reg state;
 	reg next_state;
 
@@ -71,7 +71,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		$readmemh("verilog/program.hex",csr_file);
 		state = STATE_INIT;
 		counter1 = 0;
-		counter2 = 0;
+		//counter2 = 0;
 		start_pc = 1'b1; //means dont start pc yet
 	end
 
@@ -82,11 +82,11 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
     always @(*) begin
         case (state)
             STATE_INIT: begin
-                next_state = (counter1 < 1024) ? STATE_INIT : STATE_CLEAR;
+                next_state = (counter1 < 11'b10000000000) ? STATE_INIT : STATE_OPERATION; //look into byte vs word addressing
             end //check if should be 1024 or 1023
-			STATE_CLEAR: begin
-				next_state = (counter2 < 1024) ? STATE_CLEAR : STATE_OPERATION;
-			end
+		/*	STATE_CLEAR: begin
+				next_state = (counter2 < 11'b10000000000) ? STATE_CLEAR : STATE_OPERATION;
+			end */
             STATE_OPERATION: begin
                 next_state = STATE_OPERATION;
             end
@@ -94,22 +94,22 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
     end
 
     always @(posedge clk) begin
-
+		wr_en <= 1'b0;
         if (state == STATE_INIT) begin
-			wr_en <= 1'b0;
+			
             // Write the counter-th value in csr_file to rdVal_CSR
-            rdVal_CSR <= csr_file[counter1[9:0]];
-			spram_wr_addr <= counter1;
+            rdVal_CSR <= csr_file[counter1];
+			spram_wr_addr <= counter1 << 2;
 			wr_en <= 1'b1; //write data to spram
 
             // Increment the counter
-            if (counter1 < 2**10 ) begin //this may need to be 1023
+            if (counter1 < 11'b10000000000 ) begin //this may need to be 1023
                 counter1 <= counter1 + 1;
-				wr_en <= 1'b0;
-			end else begin
+			
+			end 
 
-			end
-
+		
+/*
 		end else if (state == STATE_CLEAR)  begin
 
 			csr_file[counter2[9:0]] <= 32'b0; 
@@ -117,21 +117,19 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
             if (counter2 < 2**10 ) begin //this may need to be 1023
                 counter2 <= counter2 + 1;
 			end
-		/*
-			end else begin
-				start_pc <= 1'b0; //low means start (legacy from when was using wr_en)
-			end
-		*/
+
+		
+*/
     	end else if (state == STATE_OPERATION) begin
 			start_pc <= 1'b0;
             if (write) begin
-                csr_file[wrAddr_CSR[9:0]] <= wrVal_CSR;
+                csr_file[wrAddr_CSR] <= wrVal_CSR;
             end
-            rdVal_CSR <= csr_file[rdAddr_CSR[9:0]];
+            rdVal_CSR <= csr_file[rdAddr_CSR];
         end
     end
 
-/* d
+/* 
     always @(posedge clk) begin
 		case (state) 
 			STATE_INIT: begin

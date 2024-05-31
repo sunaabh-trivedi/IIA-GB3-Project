@@ -26,7 +26,7 @@ module instruction_memory (
     end
 */
     SB_SPRAM256KA inst_SPRAM0 (
-        .ADDRESS(addr),
+        .ADDRESS(addr>>2),
         .DATAIN(data_in[15:0]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
@@ -39,7 +39,7 @@ module instruction_memory (
     );
 
     SB_SPRAM256KA inst_SPRAM1 (
-        .ADDRESS(addr),
+        .ADDRESS(addr>>2),
         .DATAIN(data_in[31:16]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),

@@ -193,7 +193,7 @@ module cpu(
 		);
 
 	adder pc_adder(
-			.input1(32'b1), //eg increment PC by 1 (each memory location in SPRAM is 32 wide, after width )
+			.input1(32'b100), //eg increment PC by 4 (each memory location in SPRAM is 32 wide, after width )
 			.input2(pc_out),
 			.out(pc_adder_out),
 			.enable(start_pc)
@@ -548,7 +548,7 @@ module cpu(
 
 	//Instruction Memory Connections
 
-	assign inst_mem_inCPU = pc_out[13:0];
+	assign inst_mem_inCPU = pc_out[13:0] ;
 	assign inst_mem_in = inst_mem_in32b[13:0];
 
 	//Data Memory Connections
