@@ -44,21 +44,47 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR);
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, spram_addr, spram_inst, start_pc, wr_en);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
 	input [31:0] wrVal_CSR;
 	input [11:0] rdAddr_CSR;
 	output reg[31:0] rdVal_CSR;
+	output reg wr_en;
+
+	output reg [31:0]	spram_addr; //seperate outputs currently for spram stage
+	output reg [31:0]	spram_inst; 
 
 	reg [31:0] csr_file [0:2**10-1];
+	output reg start_pc; 			//to stall PC
+
+	initial begin
+		$readmemh("verilog/program.hex", csr_file);
+		start_pc <= 1'b0; //pc stalled
+		spram_addr <= 32'b0;
+
+	end
+
 
 	always @(posedge clk) begin
-		if (write) begin
-			csr_file[wrAddr_CSR] <= wrVal_CSR;
+		wr_en <= 1'b0;
+		if (start_pc) begin
+			if (write) begin
+				csr_file[wrAddr_CSR] <= wrVal_CSR;
+			end
+			rdVal_CSR <= csr_file[rdAddr_CSR];
+		end else begin
+			if (spram_addr==1024*4) begin
+				start_pc <= 1;
+				wr_en <= 1'b0;
+			end else begin
+
+				spram_inst <= csr_file[spram_addr];
+				spram_addr <= spram_addr +4;
+				wr_en <= 1'b1;
+			end
 		end
-		rdVal_CSR <= csr_file[rdAddr_CSR];
 	end
 
 endmodule

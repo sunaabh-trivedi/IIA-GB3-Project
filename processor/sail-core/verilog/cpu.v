@@ -51,7 +51,9 @@ module cpu(
 			data_mem_WrData,
 			data_mem_memwrite,
 			data_mem_memread,
-			data_mem_sign_mask
+			data_mem_sign_mask,
+			spram_writeinst,
+			wr_en
 		);
 	/*
 	 *	Input Clock
@@ -61,9 +63,10 @@ module cpu(
 	/*
 	 *	instruction memory input
 	 */
-	output [31:0]		inst_mem_in;
+	output [31:0]		inst_mem_in; //address
 	input [31:0]		inst_mem_out;
-
+	output [31:0] 		spram_writeinst; //inst to write to inst_mem
+	output 				wr_en; //wr_en for spram
 	/*
 	 *	Data Memory
 	 */
@@ -188,6 +191,10 @@ module cpu(
 			.out(pc_adder_out)
 		);
 
+
+	wire start_pc;
+	
+
 	program_counter PC(
 			.inAddr(pc_in),
 			.outAddr(pc_out),
@@ -270,14 +277,29 @@ module cpu(
 			.sign_mask(dataMem_sign_mask)
 		);
 
+	wire [31:0] spram_writeaddr;
+
+
 	csr_file ControlAndStatus_registers(
 			.clk(clk),
 			.write(mem_wb_out[3]), //TODO
 			.wrAddr_CSR(mem_wb_out[116:105]),
 			.wrVal_CSR(mem_wb_out[35:4]),
 			.rdAddr_CSR(inst_mux_out[31:20]),
-			.rdVal_CSR(rdValOut_CSR)
+			.rdVal_CSR(rdValOut_CSR),
+			.spram_addr(spram_writeaddr),				//address to write to in spram in configuration
+			.spram_inst(spram_writeinst),				//instruction to write to spram
+			.wr_en(wr_en),				//wr_en for spram
+			.start_pc(start_pc) 		//to start PC
 		);
+
+	mux2to1 Config_mux_addr( 		//to choose inst_mem address as from CSR in configuration, or PC in operation
+			.input0(spram_writeaddr),
+			.input1(pc_out),
+			.select(start_pc),
+			.out(inst_mem_in)
+	);
+
 
 	mux2to1 RegA_mux(
 			.input0(regA_out),
@@ -507,7 +529,7 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	assign inst_mem_in = pc_out;
+	//assign inst_mem_in = pc_out;
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;

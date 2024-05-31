@@ -45,10 +45,11 @@
 
 
 
-module adder(input1, input2, out);
+module adder(input1, input2, out, enable);
 	input [31:0]	input1;
 	input [31:0]	input2;
 	output [31:0]	out;
+	input enable;
 
-	assign		out = input1 + input2;
+	assign  out = (enable) ? (input1 + input2) : 32'b0;
 endmodule

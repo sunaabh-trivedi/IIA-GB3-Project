@@ -72,7 +72,8 @@ module top (led);
 	wire		data_memwrite;
 	wire		data_memread;
 	wire[3:0]	data_sign_mask;
-
+	wire[31:0]	inst_data;
+	wire reg 	wr_en;
 
 	cpu processor(
 		.clk(clk_proc),
@@ -83,12 +84,17 @@ module top (led);
 		.data_mem_WrData(data_WrData),
 		.data_mem_memwrite(data_memwrite),
 		.data_mem_memread(data_memread),
-		.data_mem_sign_mask(data_sign_mask)
+		.data_mem_sign_mask(data_sign_mask),
+		.wr_en(wr_en), 							//write enable to inst_mem
+		.spram_writeinst(inst_data)					//data to be written to inst_mem
 	);
 
 	instruction_memory inst_mem( 
-		.addr(inst_in), 
-		.out(inst_out)
+		.addr(inst_in[13:0]), 						//address of Memory
+		.data_out(inst_out),					//instruction output
+		.data_in(inst_data),					//to write to inst_mem
+		.clk(~clk_proc),						//syncrhonised on neg edge CLOCK
+		.wr_en(wr_en)							// write enable bits
 	);
 
 	data_mem data_mem_inst(
