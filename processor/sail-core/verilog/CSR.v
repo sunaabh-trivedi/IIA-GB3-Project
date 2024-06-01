@@ -117,7 +117,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
             // Increment the counter
 			 //this may need to be 1023
             counter2 <= counter2 + 1;
-		end
+		
 
 		
 
