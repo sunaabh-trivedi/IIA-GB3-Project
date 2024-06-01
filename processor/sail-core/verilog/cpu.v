@@ -207,7 +207,9 @@ module cpu(
 			.input1(inst_mem_out),
 			.select(start_pc),
 			.out(inst_mem_mux_out)
-	)
+	);
+
+	wire [31:0] inst_mem_mux_out;
 
 	mux2to1 inst_mux(
 			.input0(inst_mem_mux_out),
