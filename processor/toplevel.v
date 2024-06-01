@@ -44,10 +44,14 @@
 module top (led);
 	output [7:0]	led;
 
-	wire		clk_proc;
+	wire		half_clk_proc;
+	wire 		double_clk_proc;
 	wire		data_clk_stall;
-	
-	wire		clk;
+	reg 		toggle;
+
+	wire		double_clk;
+	reg			half_clk;
+
 	reg		ENCLKHF		= 1'b1;	// Plock enable
 	reg		CLKHF_POWERUP	= 1'b1;	// Power up the HFOSC circuit
 
@@ -55,10 +59,10 @@ module top (led);
 	/*
 	 *	Use the iCE40's hard primitive for the clock source.
 	 */
-	SB_HFOSC #(.CLKHF_DIV("0b11")) OSCInst0 (
+	SB_HFOSC #(.CLKHF_DIV("0b01")) OSCInst0 (
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
-		.CLKHF(clk)
+		.CLKHF(double_clk)
 	);
 
 	/*
@@ -73,10 +77,23 @@ module top (led);
 	wire		data_memread;
 	wire[3:0]	data_sign_mask;
 	wire[31:0]	inst_data;
-	wire reg 	wr_en;
+	wire  	wr_en;
+
+    // Initial values
+    initial begin
+        half_clk = 0;
+        toggle = 0;
+    end
+
+    always @(posedge double_clk) begin
+        toggle <= ~toggle;
+        if (toggle) begin
+            half_clk <= ~half_clk;
+        end
+    end
 
 	cpu processor(
-		.clk(clk_proc),
+		.clk(half_clk_proc),
 		.inst_mem_in(inst_in),
 		.inst_mem_out(inst_out),
 		.data_mem_out(data_out),
@@ -90,15 +107,15 @@ module top (led);
 	);
 
 	instruction_memory inst_mem( 
-		.addr(inst_in[13:0]), 						//address of Memory
+		.addr(inst_in), 						//address of Memory
 		.data_out(inst_out),					//instruction output
 		.data_in(inst_data),					//to write to inst_mem
-		.clk(~clk_proc),						//syncrhonised on neg edge CLOCK
+		.clk(double_clk_proc),						//syncrhonised on neg edge CLOCK
 		.wr_en(wr_en)							// write enable bits
 	);
 
 	data_mem data_mem_inst(
-			.clk(clk),
+			.clk(half_clk),
 			.addr(data_addr),
 			.write_data(data_WrData),
 			.memwrite(data_memwrite), 
@@ -109,5 +126,6 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
-	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
+	assign half_clk_proc = (data_clk_stall) ? 1'b1 : half_clk;
+	assign double_clk_proc = (data_clk_stall) ? 1'b1 : double_clk;
 endmodule

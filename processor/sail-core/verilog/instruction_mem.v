@@ -1,7 +1,7 @@
 
 
 module instruction_memory (
-    input  wire [13:0] addr,
+    input  wire [31:0] addr,
     input  wire        wr_en,
     input  wire [31:0] data_in,
     output wire [31:0] data_out,
@@ -9,9 +9,10 @@ module instruction_memory (
 );
 
     wire [15:0] inst_out_0, inst_out_1;
-
+	wire [31:0] spram_addr;
+	assign spram_addr = addr >> 2;
     SB_SPRAM256KA inst_SPRAM0 (
-        .ADDRESS(addr>>2),
+        .ADDRESS(spram_addr[13:0]),
         .DATAIN(data_in[15:0]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
@@ -24,7 +25,7 @@ module instruction_memory (
     );
 
     SB_SPRAM256KA inst_SPRAM1 (
-        .ADDRESS(addr>>2),
+        .ADDRESS(spram_addr[13:0]),
         .DATAIN(data_in[31:16]),
         .MASKWREN(4'b1111),
         .WREN(wr_en),
