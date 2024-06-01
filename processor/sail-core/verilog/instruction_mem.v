@@ -80,7 +80,6 @@ module instruction_memory(addr, out, clk);
 
     always @(negedge clk) begin
         if (RE) begin
-			
 	        out <= instruction_memory[addr >> 2];
         end
     end
