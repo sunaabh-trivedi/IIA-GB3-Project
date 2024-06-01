@@ -44,47 +44,93 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, spram_addr, spram_inst, start_pc, wr_en);
+
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc, led);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
 	input [31:0] wrVal_CSR;
 	input [11:0] rdAddr_CSR;
 	output reg[31:0] rdVal_CSR;
-	output reg wr_en;
-
-	output reg [31:0]	spram_addr; //seperate outputs currently for spram stage
-	output reg [31:0]	spram_inst; 
-
+	output reg wr_en; //for instruction memory
 	reg [31:0] csr_file [0:2**10-1];
-	output reg start_pc; 			//to stall PC
+	output reg [31:0]	spram_wr_addr; //for indexing csr_file to write to instruction memory
+	output reg start_pc;
+	reg [31:0] counter1;
+	reg [31:0] counter2;
+
+	parameter STATE_INIT = 2'b00;
+	parameter STATE_CLEAR = 2'b01;
+	parameter STATE_OPERATION = 2'b10; //was 10
+	reg state;
+	reg next_state;
+
+	output [7:0] led;
+	reg [7:0] ledStatus = 8'b11111111;
 
 	initial begin
-		$readmemh("verilog/program.hex", csr_file);
-		start_pc <= 1'b0; //pc stalled
-		spram_addr <= 32'b0;
+		/*
+		 *	read from "program.hex" and store the instructions in csr file
+		 */
+		$readmemh("verilog/program.hex",csr_file);
+		state = STATE_INIT;
+		counter1 = 0;
+		counter2 = 0;
+		start_pc = 1'b0; //means dont start pc yet
+
 
 	end
 
+    always @(posedge clk) begin
+            state <= next_state;
+    end
 
-	always @(posedge clk) begin
+    always @(*) begin
+        case (state)
+            STATE_INIT: begin
+                next_state = (counter1 < 1024*4) ? STATE_INIT : STATE_CLEAR; //look into byte vs word addressing
+            end //check if should be 1024 or 1023
+			STATE_CLEAR: begin
+				next_state = (counter2 < 1024) ? STATE_CLEAR : STATE_OPERATION;
+			end
+            STATE_OPERATION: begin
+                next_state = STATE_OPERATION;
+            end
+        endcase
+    end
+
+    always @(posedge clk) begin
 		wr_en <= 1'b0;
-		if (start_pc) begin
-			if (write) begin
-				csr_file[wrAddr_CSR] <= wrVal_CSR;
-			end
-			rdVal_CSR <= csr_file[rdAddr_CSR];
-		end else begin
-			if (spram_addr==1024*4) begin
-				start_pc <= 1;
-				wr_en <= 1'b0;
-			end else begin
+        if (state == STATE_INIT) begin
+			
+            // Write the counter-th value in csr_file to rdVal_CSR
+            rdVal_CSR <= csr_file[counter1[9:0]>>2];
+			spram_wr_addr <= counter1;
+			wr_en <= 1'b1; //write data to spram
+            counter1 <= counter1 + 4;
 
-				spram_inst <= csr_file[spram_addr];
-				spram_addr <= spram_addr +4;
-				wr_en <= 1'b1;
-			end
-		end
-	end
 
+		
+
+		end else if (state == STATE_CLEAR)  begin
+			ledStatus = 8'b11111110;
+			csr_file[counter2[9:0]] <= 32'b0; 
+            // Increment the counter
+			 begin //this may need to be 1023
+            counter2 <= counter2 + 1;
+			end
+
+		
+
+    	end else if (state == STATE_OPERATION) begin
+			start_pc <= 1'b0;
+            if (write) begin
+                csr_file[wrAddr_CSR] <= wrVal_CSR;
+            end
+            rdVal_CSR <= csr_file[rdAddr_CSR];
+        end
+    end
+	assign led = ledStatus;
 endmodule
+
+

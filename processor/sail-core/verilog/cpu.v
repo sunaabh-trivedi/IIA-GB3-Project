@@ -198,7 +198,8 @@ module cpu(
 	program_counter PC(
 			.inAddr(pc_in),
 			.outAddr(pc_out),
-			.clk(clk)
+			.clk(clk),
+			.enable(start_pc)
 		);
 
 	mux2to1 inst_mux(
@@ -286,9 +287,8 @@ module cpu(
 			.wrAddr_CSR(mem_wb_out[116:105]),
 			.wrVal_CSR(mem_wb_out[35:4]),
 			.rdAddr_CSR(inst_mux_out[31:20]),
-			.rdVal_CSR(rdValOut_CSR),
-			.spram_addr(spram_writeaddr),				//address to write to in spram in configuration
-			.spram_inst(spram_writeinst),				//instruction to write to spram
+			.rdVal_CSR(rdValOut_CSR),						//CSR output or instruction to spram
+			.spram_wr_addr(spram_writeaddr),				//address to write to in spram in configuration
 			.wr_en(wr_en),				//wr_en for spram
 			.start_pc(start_pc) 		//to start PC
 		);
@@ -298,6 +298,13 @@ module cpu(
 			.input1(pc_out),
 			.select(start_pc),
 			.out(inst_mem_in)
+	);
+
+	mux2to1 spram_write_mux(
+			.input0(rdValOut_CSR),
+			.input1(32'b0),
+			.select(start_pc),
+			.out(spram_writeinst)
 	);
 
 
@@ -310,10 +317,19 @@ module cpu(
 
 	mux2to1 RegB_mux(
 			.input0(regB_out),
-			.input1(rdValOut_CSR),
+			.input1(regB_mux_in),
 			.select(CSRR_signal),
 			.out(RegB_mux_out)
 		);
+	
+	wire [31:0]	regB_mux_in;
+
+	mux2to1 RegB_input_mux(
+			.input0(32'b0),
+			.input1(rdValOut_CSR),
+			.select(start_pc),
+			.out(regB_mux_in)
+	);
 
 	mux2to1 RegA_AddrFwdFlush_mux( //TODO cleanup
 			.input0({27'b0, if_id_out[51:47]}),
