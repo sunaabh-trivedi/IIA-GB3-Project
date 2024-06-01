@@ -45,7 +45,7 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc, led);
+module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en, spram_wr_addr, start_pc);
 	input clk;
 	input write;
 	input [11:0] wrAddr_CSR;
@@ -65,8 +65,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 	reg state;
 	reg next_state;
 
-	output [7:0] led;
-	reg [7:0] ledStatus = 8'b11111111;
+
 
 	initial begin
 		/*
@@ -104,7 +103,7 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
         if (state == STATE_INIT) begin
 			
             // Write the counter-th value in csr_file to rdVal_CSR
-            rdVal_CSR <= csr_file[counter1[9:0]>>2];
+            rdVal_CSR <= csr_file[counter1>>2];
 			spram_wr_addr <= counter1;
 			wr_en <= 1'b1; //write data to spram
             counter1 <= counter1 + 4;
@@ -113,24 +112,25 @@ module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR, wr_en
 		
 
 		end else if (state == STATE_CLEAR)  begin
-			ledStatus = 8'b11111110;
-			csr_file[counter2[9:0]] <= 32'b0; 
+
+			csr_file[counter2] <= 32'b0; 
             // Increment the counter
-			 begin //this may need to be 1023
+			 //this may need to be 1023
             counter2 <= counter2 + 1;
-			end
+		end
 
 		
 
     	end else if (state == STATE_OPERATION) begin
 			start_pc <= 1'b0;
+			wr_en <= 1'b0;
             if (write) begin
                 csr_file[wrAddr_CSR] <= wrVal_CSR;
             end
             rdVal_CSR <= csr_file[rdAddr_CSR];
         end
     end
-	assign led = ledStatus;
+
 endmodule
 
 

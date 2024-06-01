@@ -202,8 +202,15 @@ module cpu(
 			.enable(start_pc)
 		);
 
+	mux2to1 inst_mux_enable( 			//disconnect SPRAM output until start_pc goes high
+			.input0(32'b0),				//added after whatsapp message sent
+			.input1(inst_mem_out),
+			.select(start_pc),
+			.out(inst_mem_mux_out)
+	)
+
 	mux2to1 inst_mux(
-			.input0(inst_mem_out),
+			.input0(inst_mem_mux_out),
 			.input1(32'b0),
 			.select(inst_mux_sel),
 			.out(inst_mux_out)
