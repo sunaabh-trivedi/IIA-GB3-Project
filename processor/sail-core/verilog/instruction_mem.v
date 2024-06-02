@@ -46,7 +46,8 @@ module instruction_memory(addr, out, clk);
 	input [31:0]		addr;
 	output reg[31:0]		out;
     input clk;
-    reg RE;
+    reg RE = 1;
+
 	/*
 	 *	Size the instruction memory.
 	 *
@@ -72,15 +73,71 @@ module instruction_memory(addr, out, clk);
 		/*
 		 *	read from "program.hex" and store the instructions in instruction memory
 		 */
-        RE <= 0;
-		WE <= 1;
+        
+
 		$readmemh("verilog/program.hex",instruction_memory);
-        RE <= 1;
+
+		
 	end
 
     always @(negedge clk) begin
         if (RE) begin
 	        out <= instruction_memory[addr >> 2];
         end
+
     end
+
+/*
+	SB_RAM1024x4NW RAM0(
+		.RDATA(data_0),
+		.RADDR(addr >> 2),
+		.RCLK(~clk),
+		.RCLKE(1'b1),
+		.RE(1'b1),
+		.WADDR(4'b0),
+		.WCLK(clk),
+		.WCLKE(1'b0),
+		.WDATA(4'b0),
+		.WE(1'b0)
+	);
+	SB_RAM1024x4NW RAM1(
+		.RDATA(data_1),
+		.RADDR(addr >> 2),
+		.RCLK(~clk),
+		.RCLKE(1'b1),
+		.RE(1'b1),
+		.WADDR(4'b0),
+		.WCLK(clk),
+		.WCLKE(1'b0),
+		.WDATA(4'b0),
+		.WE(1'b0)
+	);
+	SB_RAM1024x4NW RAM2(
+		.RDATA(data_2),
+		.RADDR(addr >> 2),
+		.RCLK(~clk),
+		.RCLKE(1'b1),
+		.RE(1'b1),
+		.WADDR(4'b0),
+		.WCLK(clk),
+		.WCLKE(1'b0),
+		.WDATA(4'b0),
+		.WE(1'b0)
+	);
+	SB_RAM1024x4NW RAM3(
+		.RDATA(data_3),
+		.RADDR(addr >> 2),
+		.RCLK(~clk),
+		.RCLKE(1'b1),
+		.RE(1'b1),
+		.WADDR(4'b0),
+		.WCLK(clk),
+		.WCLKE(1'b0),
+		.WDATA(4'b0),
+		.WE(1'b0)
+	);
+
+	assign out = {data_3, data_2, data_1, data_0}
+
+	*/
 endmodule

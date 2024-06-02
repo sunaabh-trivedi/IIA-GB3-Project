@@ -507,8 +507,13 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	assign inst_mem_in = pc_out;
-
+	//assign inst_mem_in = pc_out;
+	always @(posedge clk) begin
+		inst_mem_in_stall <= pc_out;
+	end 
+	assign inst_mem_in = inst_mem_in_stall;
+	reg [31:0] inst_mem_in_stall;
+	
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
 	assign data_mem_WrData = wb_fwd2_mux_out;
