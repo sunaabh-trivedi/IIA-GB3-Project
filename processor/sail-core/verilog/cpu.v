@@ -76,6 +76,7 @@ module cpu(
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
+	reg  [31:0] 	fence_mux_out_buf;
 
 	/*
 	 *	Pipeline Registers
@@ -113,7 +114,7 @@ module cpu(
 	wire [31:0]		RegB_mux_out;
 	wire [31:0]		RegA_AddrFwdFlush_mux_out;
 	wire [31:0]		RegB_AddrFwdFlush_mux_out;
-	wire [31:0]		rdValOut_CSR;
+	wire [31:0]		inst_out;
 	wire [3:0]		dataMem_sign_mask;
 
 	/*
@@ -189,7 +190,7 @@ module cpu(
 		);
 
 	mux2to1 inst_mux(
-			.input0(rdValOut_CSR),
+			.input0(inst_out),
 			.input1(32'b0),
 			.select(inst_mux_sel),
 			.out(inst_mux_out)
@@ -201,6 +202,10 @@ module cpu(
 			.select(Fence_signal),
 			.out(fence_mux_out)
 		);
+
+	always @(posedge clk) begin
+		fence_mux_out_buf <= fence_mux_out;
+	end
 
 	/*
 	 *	IF/ID Pipeline Register
@@ -264,14 +269,10 @@ module cpu(
 			.sign_mask(dataMem_sign_mask)
 		);
 
-	// This is now the new instruction memory
-	csr_file ControlAndStatus_registers(
+	instruction_memory inst_mem(
 			.clk(clk),
-			// .write(mem_wb_out[3]), //TODO
-			// .wrAddr_CSR(mem_wb_out[116:105]),
-			// .wrVal_CSR(mem_wb_out[35:4]),
-			.rdAddr_CSR(pc_out[11:0]),
-			.rdVal_CSR(rdValOut_CSR)
+			.inst_addr(pc_out[11:0]),
+			.inst_data(inst_out)
 		);
 
 	mux2to1 RegA_mux(
@@ -283,7 +284,7 @@ module cpu(
 
 	mux2to1 RegB_mux(
 			.input0(regB_out),
-			.input1(rdValOut_CSR),
+			.input1(32'b0),
 			.select(CSRR_signal),
 			.out(RegB_mux_out)
 		);
@@ -475,7 +476,7 @@ module cpu(
 		);
 
 	mux2to1 branch_predictor_mux(
-			.input0(fence_mux_out),
+			.input0(fence_mux_out_buf),
 			.input1(branch_predictor_addr),
 			.select(predict),
 			.out(branch_predictor_mux_out)

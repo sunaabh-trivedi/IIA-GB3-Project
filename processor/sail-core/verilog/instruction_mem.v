@@ -37,44 +37,28 @@
 
 
 /*
- *	RISC-V instruction memory
+ *	Description:
+ *
+ *		This module implements the control and status registers (CSRs).
  */
 
 
-/*
-module instruction_memory(addr, out);
-	input [31:0]		addr;
-	output [31:0]		out;
-*/
-	/*
-	 *	Size the instruction memory.
-	 *
-	 *	(Bad practice: The constant should be a `define).
-	 */
-	
-//	reg [31:0]		instruction_memory[0:2**12-1];
 
-	/*
-	 *	According to the "iCE40 SPRAM Usage Guide" (TN1314 Version 1.0), page 5:
-	 *
-	 *		"SB_SPRAM256KA RAM does not support initialization through device configuration."
-	 *
-	 *	The only way to have an initializable memory is to use the Block RAM.
-	 *	This uses Yosys's support for nonzero initial values:
-	 *
-	 *		https://github.com/YosysHQ/yosys/commit/0793f1b196df536975a044a4ce53025c81d00c7f
-	 *
-	 *	Rather than using this simulation construct (`initial`),
-	 *	the design should instead use a reset signal going to
-	 *	modules in the design.
-	 */
+module instruction_memory (clk, inst_addr, inst_data);
+	input clk;
+	input [31:0] inst_addr;
+	output reg[31:0] inst_data;
 
-//	initial begin
-		/*
-		 *	read from "program.hex" and store the instructions in instruction memory
-		 */
-//		$readmemh("sail-core/verilog/program.hex",instruction_memory);
-//	end
+	reg [31:0] inst_file [0:2**10-1];
 
-//	assign out = instruction_memory[addr >> 2];
-//endmodule
+	initial begin
+		$readmemh("verilog/program.hex", inst_file);
+	end
+
+	always @(posedge clk) begin
+			inst_data <= inst_file[inst_addr >> 2]; // Divide by 4 as we want PC + 1 not PC + 4
+	end
+
+
+
+endmodule
