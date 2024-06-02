@@ -120,7 +120,7 @@ module cpu(
 	wire [31:0]		RegB_mux_out;
 	wire [31:0]		RegA_AddrFwdFlush_mux_out;
 	wire [31:0]		RegB_AddrFwdFlush_mux_out;
-	wire [31:0]		rdValOut_CSR;
+	//wire [31:0]		rdValOut_CSR;
 	wire [3:0]		dataMem_sign_mask;
 
 	/*
@@ -269,7 +269,7 @@ module cpu(
 			.func3(if_id_out[46:44]),
 			.sign_mask(dataMem_sign_mask)
 		);
-
+/*
 	csr_file ControlAndStatus_registers(
 			.clk(clk),
 			.write(mem_wb_out[3]), //TODO
@@ -278,7 +278,7 @@ module cpu(
 			.rdAddr_CSR(inst_mux_out[31:20]),
 			.rdVal_CSR(rdValOut_CSR)
 		);
-
+*/
 	mux2to1 RegA_mux(
 			.input0(regA_out),
 			.input1({27'b0, if_id_out[51:47]}),
@@ -288,7 +288,8 @@ module cpu(
 
 	mux2to1 RegB_mux(
 			.input0(regB_out),
-			.input1(rdValOut_CSR),
+			//.input1(rdValOut_CSR),
+			.input1(32'b0),
 			.select(CSRR_signal),
 			.out(RegB_mux_out)
 		);
