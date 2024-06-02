@@ -46,7 +46,6 @@ module instruction_memory(addr, out, clk);
 	input [31:0]		addr;
 	output reg[31:0]		out;
     input clk;
-    reg RE = 1;
 
 	/*
 	 *	Size the instruction memory.
@@ -81,10 +80,7 @@ module instruction_memory(addr, out, clk);
 	end
 
     always @(posedge clk) begin
-        if (RE) begin
-	        out <= instruction_memory[addr >> 2];
-        end
-
+	    out <= instruction_memory[addr >> 2];
     end
 
 /*
