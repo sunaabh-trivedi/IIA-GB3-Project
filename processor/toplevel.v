@@ -55,11 +55,11 @@ module top (led);
 	/*
 	 *	Use the iCE40's hard primitive for the clock source.
 	 */
-	SB_HFOSC #(.CLKHF_DIV("0b11")) OSCInst0 (
-		.CLKHFEN(ENCLKHF),
-		.CLKHFPU(CLKHF_POWERUP),
-		.CLKHF(clk)
-	);
+//	SB_HFOSC #(.CLKHF_DIV("0b11")) OSCInst0 (
+//		.CLKHFEN(ENCLKHF),
+//		.CLKHFPU(CLKHF_POWERUP),
+//		.CLKHF(clk)
+//	);
 
 	/*
 	 *	Memory interface
@@ -76,8 +76,8 @@ module top (led);
 
 	cpu processor(
 		.clk(clk_proc),
-		.inst_mem_in(inst_in),
-		.inst_mem_out(inst_out),
+//		.inst_mem_in(inst_in),
+//		.inst_mem_out(inst_out),
 		.data_mem_out(data_out),
 		.data_mem_addr(data_addr),
 		.data_mem_WrData(data_WrData),
@@ -86,10 +86,10 @@ module top (led);
 		.data_mem_sign_mask(data_sign_mask)
 	);
 
-	instruction_memory inst_mem( 
-		.addr(inst_in), 
-		.out(inst_out)
-	);
+//	instruction_memory inst_mem( 
+//		.addr(inst_in), 
+//		.out(inst_out)
+//	);
 
 	data_mem data_mem_inst(
 			.clk(clk),

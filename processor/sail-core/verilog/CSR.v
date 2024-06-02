@@ -56,11 +56,12 @@ module csr_file (clk, rdAddr_CSR, rdVal_CSR);
 
 	// Load the program into the CSR. The CSR is not used in the benchmarks, so can be repurposed this way to save logic cells.
 	initial begin
+	    rdVal_CSR = 32'b0;
 		$readmemh("verilog/program.hex", csr_file);
 	end
 
 	always @(posedge clk) begin
-		rdVal_CSR <= csr_file[rdAddr_CSR[9:0]];
+		rdVal_CSR <= csr_file[rdAddr_CSR[9:0] >> 2]; // Divide by 4 as we want PC + 1 not PC + 4
 	end
 
 

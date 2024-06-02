@@ -44,10 +44,11 @@
 
 
 
-module program_counter(inAddr, outAddr, clk);
+module program_counter(inAddr, outAddr, bufferedOutAddr, clk);
 	input			clk;
 	input [31:0]		inAddr;
 	output reg[31:0]	outAddr;
+	output reg[31:0]    bufferedOutAddr;
 
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
@@ -60,9 +61,11 @@ module program_counter(inAddr, outAddr, clk);
 	 */
 	initial begin
 		outAddr = 32'b0;
+		bufferedOutAddr = 32'b0; // Buffer the PC output to feed into the IF/ID register
 	end
 
 	always @(posedge clk) begin
 		outAddr <= inAddr;
+		bufferedOutAddr <= outAddr;
 	end
 endmodule

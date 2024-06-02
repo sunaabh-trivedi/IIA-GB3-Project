@@ -72,6 +72,7 @@ module cpu(
 	wire [31:0]		pc_mux0;
 	wire [31:0]		pc_in;
 	wire [31:0]		pc_out;
+	wire [31:0]     pc_buf_out;
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
@@ -183,6 +184,7 @@ module cpu(
 	program_counter PC(
 			.inAddr(pc_in),
 			.outAddr(pc_out),
+			.bufferedOutAddr(pc_buf_out),
 			.clk(clk)
 		);
 
@@ -205,7 +207,7 @@ module cpu(
 	 */
 	if_id if_id_reg(
 			.clk(clk),
-			.data_in({inst_mux_out, pc_out}),
+			.data_in({inst_mux_out, pc_buf_out}),
 			.data_out(if_id_out)
 		);
 
@@ -268,7 +270,7 @@ module cpu(
 			// .write(mem_wb_out[3]), //TODO
 			// .wrAddr_CSR(mem_wb_out[116:105]),
 			// .wrVal_CSR(mem_wb_out[35:4]),
-			.rdAddr_CSR(pc_out),
+			.rdAddr_CSR(pc_out[11:0]),
 			.rdVal_CSR(rdValOut_CSR)
 		);
 
