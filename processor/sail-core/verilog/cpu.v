@@ -184,13 +184,13 @@ module cpu(
 
 	adder pc_adder(
 			.input1(32'b100),
-			.input2(pc_out_prebuf),
+			.input2(pc_out),
 			.out(pc_adder_out)
 		);
 
 	program_counter PC(
 			.inAddr(pc_in),
-			.outAddr(pc_out_prebuf),
+			.outAddr(pc_out),
 			.clk(clk)
 		);
 
@@ -508,12 +508,8 @@ module cpu(
 
 	//Instruction Memory Connections
 	assign inst_mem_in = pc_out;
-	always @(posedge clk) begin
-		pc_out <= pc_out_prebuf;
-	end 
 
-	wire [31:0] pc_out_prebuf;
-	
+
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
 	assign data_mem_WrData = wb_fwd2_mux_out;
