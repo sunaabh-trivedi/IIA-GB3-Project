@@ -47,7 +47,6 @@ module top (led);
 	wire		half_clk_proc;
 	wire 		double_clk_proc;
 	wire		data_clk_stall;
-	reg 		toggle;
 
 	wire		double_clk;
 	reg			half_clk;
@@ -82,14 +81,10 @@ module top (led);
     // Initial values
     initial begin
         half_clk = 0;
-        toggle = 0;
     end
 
     always @(posedge double_clk) begin
-        toggle <= ~toggle;
-        if (toggle) begin
             half_clk <= ~half_clk;
-        end
     end
 
 	cpu processor(
