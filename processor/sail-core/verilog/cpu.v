@@ -44,8 +44,6 @@
 
 module cpu(
 			clk,
-			inst_mem_in,
-			inst_mem_out,
 			data_mem_out,
 			data_mem_addr,
 			data_mem_WrData,
@@ -57,12 +55,6 @@ module cpu(
 	 *	Input Clock
 	 */
 	input clk;
-
-	/*
-	 *	instruction memory input
-	 */
-	output [31:0]		inst_mem_in;
-	input [31:0]		inst_mem_out;
 
 	/*
 	 *	Data Memory
@@ -195,7 +187,7 @@ module cpu(
 		);
 
 	mux2to1 inst_mux(
-			.input0(inst_mem_out),
+			.input0(rdValOut_CSR),
 			.input1(32'b0),
 			.select(inst_mux_sel),
 			.out(inst_mux_out)
@@ -270,12 +262,13 @@ module cpu(
 			.sign_mask(dataMem_sign_mask)
 		);
 
+	// This is now the new instruction memory
 	csr_file ControlAndStatus_registers(
 			.clk(clk),
-			.write(mem_wb_out[3]), //TODO
-			.wrAddr_CSR(mem_wb_out[116:105]),
-			.wrVal_CSR(mem_wb_out[35:4]),
-			.rdAddr_CSR(inst_mux_out[31:20]),
+			// .write(mem_wb_out[3]), //TODO
+			// .wrAddr_CSR(mem_wb_out[116:105]),
+			// .wrVal_CSR(mem_wb_out[35:4]),
+			.rdAddr_CSR(pc_out),
 			.rdVal_CSR(rdValOut_CSR)
 		);
 
@@ -505,9 +498,6 @@ module cpu(
 	//OR gate assignments, used for flushing
 	assign decode_ctrl_mux_sel = pcsrc | mistake_trigger;
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
-
-	//Instruction Memory Connections
-	assign inst_mem_in = pc_out;
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;

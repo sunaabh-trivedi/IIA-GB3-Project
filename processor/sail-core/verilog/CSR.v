@@ -44,21 +44,25 @@
 
 
 
-module csr_file (clk, write, wrAddr_CSR, wrVal_CSR, rdAddr_CSR, rdVal_CSR);
+module csr_file (clk, rdAddr_CSR, rdVal_CSR);
 	input clk;
-	input write;
-	input [11:0] wrAddr_CSR;
-	input [31:0] wrVal_CSR;
+	// input write;
+	// input [11:0] wrAddr_CSR;
+	// input [31:0] wrVal_CSR;
 	input [11:0] rdAddr_CSR;
 	output reg[31:0] rdVal_CSR;
 
 	reg [31:0] csr_file [0:2**10-1];
 
-	always @(posedge clk) begin
-		if (write) begin
-			csr_file[wrAddr_CSR] <= wrVal_CSR;
-		end
-		rdVal_CSR <= csr_file[rdAddr_CSR];
+	// Load the program into the CSR. The CSR is not used in the benchmarks, so can be repurposed this way to save logic cells.
+	initial begin
+		$readmemh("verilog/program.hex", csr_file);
 	end
+
+	always @(posedge clk) begin
+		rdVal_CSR <= csr_file[rdAddr_CSR[9:0]];
+	end
+
+
 
 endmodule
