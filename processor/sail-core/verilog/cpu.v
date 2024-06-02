@@ -79,7 +79,7 @@ module cpu(
 	 */
 	wire [31:0]		pc_mux0;
 	wire [31:0]		pc_in;
-	wire [31:0]		pc_out;
+	reg [31:0]		pc_out;
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
@@ -184,13 +184,13 @@ module cpu(
 
 	adder pc_adder(
 			.input1(32'b100),
-			.input2(pc_out),
+			.input2(pc_out_prebuf),
 			.out(pc_adder_out)
 		);
 
 	program_counter PC(
 			.inAddr(pc_in),
-			.outAddr(pc_out),
+			.outAddr(pc_out_prebuf),
 			.clk(clk)
 		);
 
@@ -507,12 +507,12 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	//assign inst_mem_in = pc_out;
+	assign inst_mem_in = pc_out;
 	always @(posedge clk) begin
-		inst_mem_in_stall <= pc_out;
+		pc_out <= pc_out_prebuf;
 	end 
-	assign inst_mem_in = inst_mem_in_stall;
-	reg [31:0] inst_mem_in_stall;
+
+	wire [31:0] pc_out_prebuf;
 	
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
