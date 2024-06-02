@@ -46,9 +46,10 @@ module top (led);
 
 	wire		clk_proc;
 	wire		data_clk_stall;
-	
-	wire 		clk_double;
-	wire        clk_double_proc;
+	wire		clk_pll_input;
+	wire 		clk_faster;
+	wire        clk_faster_proc;
+	wire		locked;
 	reg		clk;
 	reg		ENCLKHF		= 1'b1;	// Plock enable
 	reg		CLKHF_POWERUP	= 1'b1;	// Power up the HFOSC circuit
@@ -57,14 +58,50 @@ module top (led);
 	/*
 	 *	Use the iCE40's hard primitive for the clock source.
 	 */
-	SB_HFOSC #(.CLKHF_DIV("0b01")) OSCInst0 (
+	SB_HFOSC #(.CLKHF_DIV("0b00")) OSCInst0 (
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
-		.CLKHF(clk_double)
+		.CLKHF(clk_pll_input)
 	);
-	always @(posedge clk_double) begin
-		clk <= ~clk;
-	end
+
+	// REFERENCECLK: clk_pll_input
+	// PLLOUTCORE: clk_faster
+
+	/**
+	* PLL configuration
+	*
+	* This Verilog module was generated automatically
+	* using the icepll tool from the IceStorm project.
+	* Use at your own risk.
+	*
+	* Given input frequency:        48.000 MHz
+	* Requested output frequency:   36.000 MHz
+	* Achieved output frequency:    36.000 MHz
+	*/
+	SB_PLL40_CORE #(
+			.FEEDBACK_PATH("SIMPLE"),
+			.DIVR(4'b0000),		// DIVR =  0
+			.DIVF(7'b0001011),	// DIVF = 11
+			.DIVQ(3'b100),		// DIVQ =  4
+			.FILTER_RANGE(3'b100)	// FILTER_RANGE = 4
+		) uut (
+			.LOCK(locked),
+			.RESETB(1'b1),
+			.BYPASS(1'b0),
+			.REFERENCECLK(clk_pll_input),
+			.PLLOUTCORE(clk_faster)
+			);
+
+	// // Clock divide by 2
+	// always @(posedge clk_faster) begin
+	// 	clk <= ~clk;
+	// end
+
+	// Clock divide by 3
+	clk_div_by_3 clock_divider(
+		.clk_in(clk_faster),
+		.clk_out(clk)
+	);
 
 	/*
 	 *	Memory interface
@@ -94,7 +131,7 @@ module top (led);
 	instruction_memory inst_mem( 
 		.addr(inst_in), 
 		.out(inst_out),
-		.clk(clk_double_proc)
+		.clk(clk_faster_proc)
 	);
 
 	data_mem data_mem_inst(
@@ -109,6 +146,6 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
-	assign clk_double_proc = (data_clk_stall) ? 1'b1 : clk_double;
+	assign clk_faster_proc = (data_clk_stall) ? 1'b1 : clk_faster;
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
 endmodule
