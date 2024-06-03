@@ -36,6 +36,7 @@
 
 
 
+
 /*
  *	cpu top-level
  */
@@ -79,7 +80,7 @@ module cpu(
 	 */
 	wire [31:0]		pc_mux0;
 	wire [31:0]		pc_in;
-	reg [31:0]		pc_out;
+	wire [31:0]		pc_out;
 	wire			pcsrc;
 	wire [31:0]		inst_mux_out;
 	wire [31:0]		fence_mux_out;
@@ -183,8 +184,8 @@ module cpu(
 		);
 
 	DSPAdder pc_adder(
-			.input1(32'b100),
-			.input2(pc_out),
+			.A(32'b100),
+			.B(pc_out),
 			.out(pc_adder_out)
 		);
 
@@ -330,10 +331,10 @@ module cpu(
 			.select(id_ex_out[11]),
 			.out(addr_adder_mux_out)
 		);
-		
+
 	DSPAdder addr_adder(
-			.input1(addr_adder_mux_out),
-			.input2(id_ex_out[139:108]),
+			.A(addr_adder_mux_out),
+			.B(id_ex_out[139:108]),
 			.out(addr_adder_sum)
 		);
 
@@ -508,7 +509,6 @@ module cpu(
 
 	//Instruction Memory Connections
 	assign inst_mem_in = pc_out;
-
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
