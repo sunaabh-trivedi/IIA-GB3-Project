@@ -49,6 +49,8 @@ module program_counter(inAddr, outAddr, clk);
 	input [31:0]		inAddr;
 	output reg[31:0]	outAddr;
 
+	reg [13:0] 	counter;
+	reg enable;
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
 	 *
@@ -60,9 +62,18 @@ module program_counter(inAddr, outAddr, clk);
 	 */
 	initial begin
 		outAddr = 32'b0;
+		counter <= 0;
+		enable <= 0;
 	end
 
 	always @(posedge clk) begin
-		outAddr <= inAddr;
+		if (enable) begin
+			outAddr <= inAddr;
+		end if (counter < 10240) begin
+			counter <= counter + 1;
+			outAddr <= 32'b0;
+		end else begin 
+			enable <=1;
+		end
 	end
 endmodule
