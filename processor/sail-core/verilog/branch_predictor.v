@@ -40,7 +40,10 @@
  *		Branch Predictor FSM
  */
 
-module branch_predictor(
+
+module branch_predictor
+	#(parameter SIZE = 4)
+	(
 		clk,
 		actual_branch_decision,
 		branch_decode_sig,
@@ -67,11 +70,16 @@ module branch_predictor(
 	output [31:0]	branch_addr;
 	output		prediction;
 
-	/*
-	 *	internal state
-	 */
-	reg [1:0]	s;
+	// for G-share internal state
+	reg [SIZE-1:0]		global_history;
+	reg [1:0]			s_table[2**SIZE-1:0];  // 2-bit Counter Table (2BC)
 
+	// XOR hash access key
+	wire[SIZE-1:0]		hash_current;
+	reg [SIZE-1:0]		hash_buff1;
+	reg [SIZE-1:0]		hash_buff2;
+
+	// buffering branch_mem_sig
 	reg		branch_mem_sig_reg;
 
 	/*
@@ -84,9 +92,10 @@ module branch_predictor(
 	 *	the design should instead use a reset signal going to
 	 *	modules in the design and to thereby set the values.
 	 */
+	integer k;
 	initial begin
-		s = 2'b00;
 		branch_mem_sig_reg = 1'b0;
+		for (k=0; k<2**SIZE; k=k+1) s_table[k] = 2'b00;
 	end
 
 	always @(negedge clk) begin
@@ -100,11 +109,20 @@ module branch_predictor(
 	 */
 	always @(posedge clk) begin
 		if (branch_mem_sig_reg) begin
-			s[1] <= (s[1]&s[0]) | (s[0]&actual_branch_decision) | (s[1]&actual_branch_decision);
-			s[0] <= (s[1]&(!s[0])) | ((!s[0])&actual_branch_decision) | (s[1]&actual_branch_decision);
+			global_history <= {global_history[SIZE-2:0], actual_branch_decision};
+			s_table[hash_buff2][1] <= (s_table[hash_buff2][1]&s_table[hash_buff2][0]) | (s_table[hash_buff2][0]&actual_branch_decision) | (s_table[hash_buff2][1]&actual_branch_decision);
+			s_table[hash_buff2][0] <= (s_table[hash_buff2][1]&(!s_table[hash_buff2][0])) | ((!s_table[hash_buff2][0])&actual_branch_decision) | (s_table[hash_buff2][1]&actual_branch_decision);
 		end
 	end
 
+	// Evaluate hash value
+	assign hash_current = in_addr[SIZE+2-1:2] ^ global_history;
+	// Buffering hash value
+	always @(posedge clk) begin
+		hash_buff1 <= hash_current;
+		hash_buff2 <= hash_buff1;
+	end
+
 	assign branch_addr = in_addr + offset;
-	assign prediction = s[1] & branch_decode_sig;
+	assign prediction = s_table[hash_current][1] & branch_decode_sig;
 endmodule
