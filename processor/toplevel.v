@@ -61,6 +61,7 @@ module top (led);
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
 		.CLKHF(clk_double)
+		.CLKHF(clk)
 	);
 	always @(posedge clk_double) begin
 		clk <= ~clk;
@@ -95,6 +96,7 @@ module top (led);
 		.addr(inst_in), 
 		.out(inst_out),
 		.clk(clk_double_proc)
+		
 	);
 
 	data_mem data_mem_inst(
