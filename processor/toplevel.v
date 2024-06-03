@@ -61,7 +61,7 @@ module top (led);
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
 		.CLKHF(clk_double)
-		.CLKHF(clk)
+
 	);
 	always @(posedge clk_double) begin
 		clk <= ~clk;

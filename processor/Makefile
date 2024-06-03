@@ -5,9 +5,9 @@ sail-nextpnr:
 	mkdir -p $(GB3_ROOT)/build
 	cp programs/data.hex verilog/
 	cp programs/program.hex verilog/
-	yosys -q $(GB3_ROOT)/processor/yscripts/$(DESIGN).ys -l YosysStats.txt
-	nextpnr-ice40 --up5k --package uwg30 --json $(DESIGN).json --pcf pcf/$(DESIGN).pcf --asc $(DESIGN).asc -l PNRStats.txt
-	icetime -p pcf/sail.pcf -P uwg30 -d up5k -t sail.asc -r icetimeStats.txt
+	yosys -q $(GB3_ROOT)/processor/yscripts/$(DESIGN).ys -l YosysStats_6.txt
+	nextpnr-ice40 --up5k --package uwg30 --json $(DESIGN).json --pcf pcf/$(DESIGN).pcf --asc $(DESIGN).asc -l PNRStats_6.txt
+	icetime -p pcf/sail.pcf -P uwg30 -d up5k -t sail.asc -r icetimeStats_6.txt
 	icepack $(DESIGN).asc design.bin
 	cp design.bin $(GB3_ROOT)/build/
 
