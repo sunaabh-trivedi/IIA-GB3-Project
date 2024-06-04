@@ -35,6 +35,7 @@
 */
 
 
+
 /*
  *	top.v
  *
@@ -48,6 +49,22 @@ module top (led);
 	wire		data_clk_stall;
 	
 	wire		clk;
+	/*
+	wire 		clk_pll_double;
+	wire		pll_lock;
+	reg clk_pll;
+
+	always @(posedge clk_pll_double) begin
+		clk_pll <= ~ clk_pll;
+	end
+
+	pll pll(
+		.clock_in(clk),
+		.clock_out(clk_pll_double),
+		.locked(pll_lock)
+
+	);*/
+
 	reg		ENCLKHF		= 1'b1;	// Plock enable
 	reg		CLKHF_POWERUP	= 1'b1;	// Power up the HFOSC circuit
 
@@ -94,6 +111,7 @@ module top (led);
 	);
 
 	data_mem data_mem_inst(
+			//.clk(clk_pll),
 			.clk(clk),
 			.addr(data_addr),
 			.write_data(data_WrData),
@@ -105,5 +123,9 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
+
+
+	//assign clk_proc = (data_clk_stall) ? 1'b1 : clk_pll;
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
+
 endmodule

@@ -103,7 +103,8 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 	 *
 	 *	(Bad practice: The constant for the size should be a `define).
 	 */
-	reg [31:0]		data_block[0:1023];
+	//reg [31:0]		data_block[0:1023];
+	reg [31:0]			data_block[0:255];
 
 	/*
 	 *	wire assignments
@@ -221,7 +222,7 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 	 *	modules in the design.
 	 */
 	initial begin
-		$readmemh("verilog/data.hex", data_block);
+		$readmemh("verilog/competition-benchmark-2024-data.hex", data_block);
 		clk_stall = 0;
 	end
 
